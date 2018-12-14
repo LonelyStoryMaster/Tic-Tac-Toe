@@ -2,7 +2,7 @@
 Final Project for Introduction to Programming class
 
 ## THE GAME
---------------------------------------------------------------
+
 ### RULES:
 
 X is Red
@@ -22,7 +22,7 @@ Doesn't need to be the same column or row, just three boards where you've won in
 
 
 ## ABOUT:
---------------------------------------------------------------
+
 ### Class:
 - Intro to Programming, On ground class
 
