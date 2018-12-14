@@ -3,6 +3,13 @@ Final Project for Introduction to Programming class
 
 ## THE GAME
 
+### RUNNING IT:
+
+In order to run, pygame must be installed on the computer.
+Plese refer to the [Pygame Wiki](https://www.pygame.org/wiki/GettingStarted) for instructions.
+
+Then all you need to do is double click on the **DefaultBoard.py** file as of now
+
 ### RULES:
 
 X is Red
