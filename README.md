@@ -1,7 +1,7 @@
 # Tic-Tac-Toe
 Final Project for Introduction to Programming class
 
-### THE GAME
+## THE GAME
 --------------------------------------------------------------
 ### RULES:
 
@@ -18,10 +18,10 @@ To win this game, you need to get three tic-tac-toes in a row.
 Doesn't need to be the same column or row, just three boards where you've won in a row.
 
 
---------------------------------------------------------------
 
 
-### ABOUT:
+
+## ABOUT:
 --------------------------------------------------------------
 ### Class:
 - Intro to Programming, On ground class
