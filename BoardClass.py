@@ -27,6 +27,7 @@ class Board:
 		self.current_color = self.x_color
 		self.winner = Winners.NONE
 		self.game_won = False
+		self.win_line_drawn = False
 		self.play_made = False
 		self.squares_disabled = False
 		self.current_player = Winners.X
@@ -109,6 +110,7 @@ class Board:
 			pos1 = condition[0]
 			pos2 = condition[1]
 			pos3 = condition[2]
+
 			square1 = self.board_contents[ pos1[0] ][ pos1[1] ]
 			square2 = self.board_contents[ pos2[0] ][ pos2[1] ]
 			square3 = self.board_contents[ pos3[0] ][ pos3[1] ]
@@ -116,7 +118,11 @@ class Board:
 			if ( square1.get_Winner() == square2.get_Winner() == square3.get_Winner() ):
 				if ( ( square1.get_Winner() == Winners.X ) or ( square1.get_Winner() == Winners.O ) ):
 					self.winner = square1.get_Winner()
-					self.__draw_Rounded_Line(self.background, Colors.BLACK.value, square1.get_Center_Point(), square3.get_Center_Point(), self.line_weight)
+					
+					if not self.win_line_drawn:
+						self.__draw_Winner_Line(self.background, square1, square3, Colors.BLACK.value, self.line_weight)
+						self.win_line_drawn = True
+
 					self.game_won = True
 					break
 				
@@ -159,32 +165,53 @@ class Board:
 		pygame.draw.circle(surface, color, start_pos, int( width * 0.45 ) )
 		pygame.draw.circle(surface, color, end_pos, int( width * 0.45 ) )
 
-	def __draw_Winner_Line(self, square1, square2, hv_exstension=0.15):
-		rise = square2[1] - square1[1]
-		run = square2[0] - square1[0]
-
-		square1_center_pos = square1.get_Center_Pos()
+	def __draw_Winner_Line(self, surface, square1, square2, color, width, hv_exstension=0.15):
+		square1_center_pos = square1.get_Center_Point()
 		square1_side_length = square1.get_Side_Length()
+		square1_origin = square1.get_Origin()
+		square1_end_point = square1.get_End_Point()
 
-		square2_center_pos = square2.get_Center_Pos()
+		square2_center_pos = square2.get_Center_Point()
 		square2_side_length = square2.get_Side_Length()
+		square2_origin = square2.get_Origin()
+		square2_end_point = square2.get_End_Point()
+
+		square1_offsets = ( int( ( square1_center_pos[0] - square1_origin[0] ) / 2 ), int( ( square1_center_pos[1] - square1_origin[1] ) / 2) )
+		square2_offsets = ( int( ( square2_end_point[0] - square2_center_pos[0] ) / 2), int( ( square2_end_point[1] - square2_center_pos[1] ) / 2) )
+
+		rise = square2_center_pos[1] - square1_center_pos[1]
+		run = square2_center_pos[0] - square1_center_pos[0]
+		
+		if (run == 0):
+			slope = None
+		else:
+			slope = ( rise / run )
 
 		start_pos = 0
 		end_pos = 0
 
-		if (run == 0) and ( rise > 0 ):
-			start_pos = ( square1_center_pos[0], ( square1_center_pos[1] - ( square1_side_length * hv_exstension ) ) )
-			end_pos = ( square2_center_pos[0], ( square2_center_pos[1] + ( square2_side_length * hv_exstension ) ) )
-		elif ( run > 0 ) and ( rise == 0 ):
-			start_pos = ( ( square1_center_pos[0] - ( square1_side_length * hv_exstension ) ), square1_center_pos[1] )
-			end_pos = ( ( square1_center_pos[0] + ( square2_side_length * hv_exstension ) ), square2_center_pos[1] )
+		if ( slope == None):
+			start_pos = ( square1_center_pos[0], ( square1_center_pos[1] - int( square1_side_length * hv_exstension ) ) )
+			end_pos = ( square2_center_pos[0], ( square2_center_pos[1] + int( square2_side_length * hv_exstension ) ) )
+		elif ( slope == 0 ):
+			start_pos = ( ( square1_center_pos[0] - int( square1_side_length * hv_exstension ) ), square1_center_pos[1] )
+			end_pos = ( ( square2_center_pos[0] + int( square2_side_length * hv_exstension ) ), square2_center_pos[1] )
+		elif ( slope > 0 ):
+			start_pos = ( ( square1_origin[0] + square1_offsets[0] ), ( square1_origin[1] + square1_offsets[1] ) )
+			end_pos = ( ( square2_end_point[0] - square2_offsets[0] ), ( square2_end_point[1] - square2_offsets[1] ) )
+		elif ( slope < 0):
+			start_pos = ( ( square1_center_pos[0] - square1_offsets[0] ), ( square1_center_pos[1] + square1_offsets[1] ) )
+			end_pos = ( ( square2_end_point[0] - square2_offsets[0] ), ( square2_origin[1] + square2_offsets[1] ) )
 		
+		print( start_pos, end_pos )
+		self.__draw_Rounded_Line(surface, color, start_pos, end_pos, width)
+
 	def __disable_Squares(self):
 		for row in range( len( self.board_contents ) ):
 			for col in range( len( self.board_contents[ row ] ) ):
 				square = self.board_contents[ row ][ col ]
 				if ( ( square.get_Winner() != Winners.X ) and ( square.get_Winner() != Winners.O ) ):
-					print( [ row, col ] )
+					# print( [ row, col ] )
 					square.set_Winner(Winners.DRAW)
 
 	def check_Squares(self, pos_to_check):
