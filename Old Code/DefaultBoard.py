@@ -22,7 +22,7 @@ class TwoPlayerBoard:
         
     def __init_board(self, screen_size, num_boards):
         self.ttt = pygame.display.set_mode((screen_size))
-        
+        print(self.ttt)
         self.board_size = self.ttt.get_size()
         self.background = pygame.Surface(self.board_size)
         self.background = self.background.convert()
@@ -31,6 +31,8 @@ class TwoPlayerBoard:
         # Board Size Thingy
         self.new_size = self.board_size[0] / num_boards
         self.length = self.board_size[0]
+
+        print(self.board_size[0], self.new_size, self.length)
 
         # Vertical and Horizontal lines
         for i in range(int(num_boards)):
@@ -139,5 +141,5 @@ class TwoPlayerBoard:
             #     self.running = 0
 
 if __name__ == "__main__":
-    big_board = TwoPlayerBoard(9, 50)
+    big_board = TwoPlayerBoard(1, 50)
     big_board.play_game()
