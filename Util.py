@@ -16,8 +16,8 @@ class Colors(Enum):
     GREY = (73, 73, 73)
     WHITISH = (214, 214, 214)
 
-def within_tol(val, start, stop):
+def within_Range(val, start, stop):
 	return start < val < stop
 
-def dist_between_points(point1, point2):
+def dist_Between_Points(point1, point2):
     return sqrt( ( ( point2[0] - point1[0] ) ** 2 ) + (  (  point2[1] - point1[1] ) ** 2 ) )

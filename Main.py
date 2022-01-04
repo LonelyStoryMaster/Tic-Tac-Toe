@@ -22,7 +22,7 @@ pygame.init()
 
 screens = startGame()
 
-newBoard = Board(screens[1], line_color=Colors.WHITISH, hasBorder=True)
+newBoard = Board(screens[1], screens[1].get_size(), line_color=Colors.WHITISH, hasBorder=True)
 
 clock = pygame.time.Clock()
 
