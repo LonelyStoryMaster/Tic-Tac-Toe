@@ -6,7 +6,7 @@ from GameSquareClass import GameSquare
 from Util import Winners, Colors
 
 class Board:
-	def __init__(self, background, dimensions, line_color=Colors.WHITISH, x_color=Colors.RED, o_color=Colors.BLUE, bg_color = Colors.GREY, isInBigBoard=False, hasBorder=True, origin=[0,0]):
+	def __init__(self, background, dimensions, line_color=Colors.WHITISH, x_color=Colors.RED, o_color=Colors.BLUE, bg_color = Colors.GREY, amount_boards=(1, 1), hasBorder=True, origin=[0,0]):
 		# self.display = display
 		self.background = background
 		self.dimensions = dimensions
@@ -18,13 +18,15 @@ class Board:
 		self.piece_line_weight = 0
 		self.origin = origin
 		self.bordered_origin = self.origin
-		# self.isInBigBoard = isInBigBoard
+		self.end_point = None
+		self.center_point = None
+		self.amount_boards = amount_boards
 		self.hasBorder = hasBorder
-		self.bg_color = bg_color.value
-		self.line_color = line_color.value
-		self.x_color = x_color.value
-		self.o_color = o_color.value
-		self.current_color = self.x_color
+		self.bg_color = bg_color
+		self.line_color = line_color
+		self.x_color = x_color
+		self.o_color = o_color
+		self.current_color = self.x_color.value
 		self.winner = Winners.NONE
 		self.game_won = False
 		self.win_line_drawn = False
@@ -32,9 +34,7 @@ class Board:
 		self.squares_disabled = False
 		self.current_player = Winners.X
 		self.running = 1  # If this is 0, close the window
-		self.board_contents = [ [ None, None, None ],
-								[ None, None, None ],
-								[ None, None, None ]]
+		self.board_contents = [ ]
 		self.win_condition_pos = [[[0, 0], [0, 1], [0, 2]], [[1, 0], [1, 1], [1, 2]], [[2, 0], [2, 1], [2, 2]],
                    				   [[0, 0], [1, 0], [2, 0]], [[0, 1], [1, 1],
                    				       [2, 1]], [[2, 0], [1, 1], [0, 2]],
@@ -43,8 +43,8 @@ class Board:
 		# Generate the necessary values to draw the board
 		self.__gen_board_vals()
 
-		# Modify the origin values if necessary
-		self.__modify_origin()
+		# Generate the neccesary amount of spaces for desired board size
+		self.__gen_board_contents()
 
 		# Draw the board using whichever origin is necessary
 		self.__draw_board()
@@ -54,24 +54,28 @@ class Board:
 
 	# Used to calculate the necessary values to draw the board properly. Only used on creation of new object
 	def __gen_board_vals(self):
-		# num_boards = 1
-		# if self.isInBigBoard:
-		# 	num_boards = 9
-		# sqrt_boards = math.sqrt(num_boards)			# Gets how many games need to fit across the screen
-		num_columns = 0
+		num_columns = max( self.amount_boards[0], 3 )
 		if self.hasBorder:
-			num_columns = 4 			# Need 4 columns per board to have room for the borders
-		else:
-			num_columns = 3			# Only need 3 columns per board without borders
-			num_columns = int( num_columns )
+			num_columns += 1
 		self.square_size = int( math.ceil( self.width / num_columns ) )
 		self.line_weight = int(math.ceil(self.square_size * 0.08))		# Trial and error number that looks nice
 		self.piece_line_weight = int( self.line_weight * 0.86 )
 		self.border_offset = math.ceil( self.square_size / 2 )			# Using the offset to create a modified origin point
-		self.bordered_origin = [ ( self.origin[0] + self.border_offset ), ( self.origin[1] + self.border_offset )]
+		self.bordered_origin = ( ( self.origin[0] + self.border_offset ), ( self.origin[1] + self.border_offset ) )
+		
+		# Modify the origin values if necessary
+		self.__modify_origin()
+		
+		self.end_point = ( ( self.origin[0] + self.square_size ), ( self.origin[1] + self.square_size ) )
+		self.center_point = ( ( self.origin[0] + int( self.square_size / 2 ) ), ( self.origin[1] + int( self.square_size / 2 ) ) )
 
-		# TODO: Add log printout to enable these
-		# print(self.height, self.width, num_columns, self.square_size, self.border_offset, self.line_weight)
+	# Generate number of squares needed for desired game size
+	def __gen_board_contents(self):
+		for row in range( max( self.amount_boards[0], 3 ) ):
+			new_row = [ ]
+			for col in range( max( self.amount_boards[1], 3 ) ):
+				new_row.append(None)
+			self.board_contents.append(new_row)
 
 	# If game has a border replace self.origin data with self.bordered_origin data
 	def __modify_origin(self):
@@ -80,24 +84,26 @@ class Board:
 
 	# Drawing the actual lines of the board. Only used on creation of new object
 	def __draw_board(self):
-		pygame.draw.line(self.background, self.line_color, ( ( self.origin[0] + self.square_size), self.origin[1] ), ( ( self.origin[0] + self.square_size ), ( self.origin[1] + ( self.square_size * 3 ) ) ), self.line_weight)
-		pygame.draw.line(self.background, self.line_color, ( ( self.origin[0] +  ( self.square_size * 2 ) ), self.origin[1]), ( ( self.origin[0] + ( self.square_size * 2 ) ), ( self.origin[1] + ( self.square_size * 3 ) ) ), self.line_weight)
-		pygame.draw.line(self.background, self.line_color, ( self.origin[0], ( self.origin[1] + self.square_size ) ), ( ( self.origin[0] + ( self.square_size * 3 ) ), ( self.origin[1] + self.square_size ) ), self.line_weight)
-		pygame.draw.line(self.background, self.line_color, ( self.origin[0], ( self.origin[1] + ( self.square_size * 2 ) ) ), ( ( self.origin[0] + ( self.square_size * 3 ) ), ( self.origin[1] + ( self.square_size * 2 ) ) ), self.line_weight)
+		num_rows = len( self.board_contents )
+		num_cols = len( self.board_contents[1] )
+		for row in range( 1, num_rows ):
+			# pygame.draw.line(self.background, self.line_color.value, ( ( self.origin[0] + self.square_size), self.origin[1] ), ( ( self.origin[0] + self.square_size ), ( self.origin[1] + ( self.square_size * 3 ) ) ), self.line_weight)
+			pygame.draw.line(self.background, self.line_color.value, ( ( self.origin[0] +  ( self.square_size * row ) ), self.origin[1]), ( ( self.origin[0] + ( self.square_size * row ) ), ( self.origin[1] + ( self.square_size * num_rows ) ) ), self.line_weight)
+		for col in range ( 1, num_cols ):
+			# pygame.draw.line(self.background, self.line_color.value, ( self.origin[0], ( self.origin[1] + self.square_size ) ), ( ( self.origin[0] + ( self.square_size * 3 ) ), ( self.origin[1] + self.square_size ) ), self.line_weight)
+			pygame.draw.line(self.background, self.line_color.value, ( self.origin[0], ( self.origin[1] + ( self.square_size * col ) ) ), ( ( self.origin[0] + ( self.square_size * num_cols ) ), ( self.origin[1] + ( self.square_size * col ) ) ), self.line_weight)
 
 	# Generating the squares
 	def __gen_game_squares(self):
 		current_origin = self.origin
 		for row in range( len( self.board_contents ) ):
 			for col in range( len( self.board_contents[ row ] ) ):
-				# Creating a new GameSquare with the current origin point and setting its winner to no-one
-				self.board_contents[row][col] = GameSquare(current_origin, self.square_size)
+				# Creating a new GameSquare or Board depending on the game size
+				if ( self.amount_boards[0] > 1 ):
+					self.board_contents[row][col] = Board(self.background, ( self.square_size, self.square_size ), line_color=self.line_color, x_color=self.x_color, o_color=self.o_color, origin=current_origin)
+				else:
+					self.board_contents[row][col] = GameSquare(current_origin, self.square_size)
 				self.board_contents[row][col].set_Winner(Winners.NONE)
-
-				# Draw a circle at the origin and end corner of each square
-				# print(current_origin)
-				# pygame.draw.circle(self.background, Colors.GREEN.value, current_origin, 3)
-				# pygame.draw.circle(self.background, Colors.BLUE.value, self.board_contents[row][col].get_End_Point(), 9)
 
 				# Incrementing over on each row to get the starting corner of the square
 				current_origin = [ ( current_origin[0] + self.square_size  ), current_origin[1] ]
@@ -134,10 +140,10 @@ class Board:
 		print(self.current_player)
 		if ( self.current_player == Winners.X ):
 			self.current_player = Winners.O
-			self.current_color = self.o_color
+			self.current_color = self.o_color.value
 		elif ( self.current_player == Winners.O):
 			self.current_player = Winners.X
-			self.current_color = self.x_color
+			self.current_color = self.x_color.value
 		else:
 			self.current_player = Winners.NONE
 
@@ -218,18 +224,35 @@ class Board:
 		for row in range( len( self.board_contents ) ):
 			for col in range( len( self.board_contents[ row ] ) ):
 				square_to_check = self.board_contents[ row ][ col ]
-				if  ( square_to_check.is_In_Square( pos_to_check ) and not self.__is_square_played( square_to_check ) ):
-					square_to_check.set_Winner(self.current_player)
-					self.play_made = True
-					self.__draw_play(square_to_check)
+
+				if isinstance(square_to_check, Board):
+					square_to_check.check_Squares(pos_to_check)
+				else:
+					if  ( square_to_check.is_In_Square( pos_to_check ) and not self.__is_square_played( square_to_check ) ):
+						square_to_check.set_Winner(self.current_player)
+						self.play_made = True
+						self.__draw_play(square_to_check)
 
 	def get_Winner(self):
 		return self.winner
 
+	def get_Center_Point(self):
+		return self.center_point
+
+	def get_End_Point(self):
+		return self.end_point
+
 	def set_Winner(self, winner):
 		self.winner = winner
 
+	def set_Current_Player(self, player_to_set):
+		self.current_player = player_to_set
+
 	def update_Board(self, display):
+		if ( self.amount_boards[0] > 1 ):
+			for col in range( len( self.board_contents ) ):
+				for row in range( len( self.board_contents[ col ] ) ):
+					self.board_contents[row][col].update_Board(display)
 		self.__is_game_won()
 		if self.game_won:
 			if not self.squares_disabled:
@@ -238,6 +261,6 @@ class Board:
 		else:
 			if self.play_made:
 				self.__switch_players()
-				self.play_made = False
+				self.play_made = False			
 		display.blit(self.background, (0,0))
 		pygame.display.flip()

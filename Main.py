@@ -6,8 +6,8 @@ def startGame( bg_color=Colors.GREY ):
 	screen_width = pygame.display.Info().current_w
 	screen_height = pygame.display.Info().current_h
 	window_size = screen_height * 0.9	# Make the display just a little smaller than the maximum allowed
-	print(screen_width)
-	print(screen_height)
+	# print(screen_width)
+	# print(screen_height)
 	
 	gameDisplay = pygame.display.set_mode( ( window_size, window_size) )
 	display_size = list(gameDisplay.get_size())
@@ -22,7 +22,7 @@ pygame.init()
 
 screens = startGame()
 
-newBoard = Board(screens[1], screens[1].get_size(), line_color=Colors.WHITISH, hasBorder=True)
+newBoard = Board(screens[1], screens[1].get_size(), amount_boards=(5,5), line_color=Colors.WHITISH, hasBorder=False)
 
 clock = pygame.time.Clock()
 
